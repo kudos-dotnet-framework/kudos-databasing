@@ -1,9 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Authors>Pietro Terracciano - https://it.linkedin.com/in/pietroterracciano - pterracciano95@gmail.com</Authors>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>Library</OutputType>
+    <ImplicitUsings>disabled</ImplicitUsings>
+    <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <Configurations>Debug;Release</Configurations>
+    <Version>0.25.1.18</Version>
+    <ReleaseVersion>0.25.1.18</ReleaseVersion>
+    <SynchReleaseVersion>false</SynchReleaseVersion>
+</PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <Optimize>false</Optimize>
+          <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <Optimize>true</Optimize>
+        <WarningLevel>0</WarningLevel>
+    </PropertyGroup>
 
 </Project>
