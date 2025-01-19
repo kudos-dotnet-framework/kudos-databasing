@@ -18,9 +18,17 @@
           <WarningLevel>4</WarningLevel>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <Optimize>true</Optimize>
         <WarningLevel>0</WarningLevel>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Kudos.Coring\Kudos.Coring.csproj" />
+      <ProjectReference Include="..\Kudos.Threading\Kudos.Threading.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="MySql.Data" Version="9.1.0" />
+      <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    </ItemGroup>
 </Project>
