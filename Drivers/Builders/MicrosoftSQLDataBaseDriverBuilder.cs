@@ -1,11 +1,8 @@
 ﻿using System;
+using System.Data;
 using Kudos.Coring.Utils.Numerics;
 using Kudos.DataBasing.Drivers.Descriptors;
-using Kudos.DataBasing.Enums;
-using Kudos.DataBasing.Interfaces.Drivers;
-using Kudos.DataBasing.Interfaces.Drivers.Builders;
 using Microsoft.Data.SqlClient;
-using MySql.Data.MySqlClient;
 
 namespace Kudos.DataBasing.Drivers.Builders
 {
@@ -14,16 +11,17 @@ namespace Kudos.DataBasing.Drivers.Builders
     :
         ADataBaseDriverBuilder
         <
-            SqlConnection,
-            SqlCommand,
-            SqlConnectionStringBuilder,
-            MicrosoftSQLDataBaseDriverDescriptor,
             MicrosoftSQLDataBaseDriverBuilder,
-            MicrosoftSQLDataBaseDriver
-        >,
-        IMicrosoftSQLDataBaseDriverBuilder
+            MicrosoftSQLDataBaseDriverDescriptor,
+            SqlConnectionStringBuilder,
+            SqlConnection,
+            MicrosoftSQLDataBaseDriver,
+            SqlDbType
+        >
     {
-        public IMicrosoftSQLDataBaseDriverBuilder SetSource(String? s) { _dsc.Source = s; return this; }
+        internal MicrosoftSQLDataBaseDriverBuilder() : base(new MicrosoftSQLDataBaseDriverDescriptor()) { }
+
+        public MicrosoftSQLDataBaseDriverBuilder SetSource(String? s) { _dsc.Source = s; return this; }
 
         protected override void _OnConnectionStringBuilderCompletize(ref MicrosoftSQLDataBaseDriverDescriptor dsc, ref SqlConnectionStringBuilder csb)
         {
@@ -42,11 +40,6 @@ namespace Kudos.DataBasing.Drivers.Builders
             if (dsc.IsCompressionEnabled != null) csb.Encrypt = dsc.IsCompressionEnabled.Value;
         }
 
-        protected override void _OnBuild(ref SqlConnection c, out MicrosoftSQLDataBaseDriver dbd)
-        {
-            dbd = new MicrosoftSQLDataBaseDriver(ref c);
-        }
-
-        internal MicrosoftSQLDataBaseDriverBuilder() : base(new MicrosoftSQLDataBaseDriverDescriptor()) { }
+        protected override void _OnNewDriver(ref SqlConnection c, out MicrosoftSQLDataBaseDriver dbd) { dbd = new MicrosoftSQLDataBaseDriver(ref c); }
     }
 }

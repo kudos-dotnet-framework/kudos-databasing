@@ -3,10 +3,13 @@ using System.Data;
 
 namespace Kudos.DataBasing.Results
 {
-    public class DataBaseQueryResult : DataBaseResult
+    public sealed class
+        DataBaseQueryResult
+    :
+        DataBaseResult
     {
-        public readonly DataTable? Data;
-        public readonly Boolean HasData;
+        public readonly DataTable? DataTable;
+        public readonly Boolean HasDataTable;
 
         internal DataBaseQueryResult
         (
@@ -14,9 +17,14 @@ namespace Kudos.DataBasing.Results
             ref DataBaseErrorResult? dber,
             ref DataBaseBenchmarkResult dbbr
         )
-        : base(ref dber, ref dbbr)
+        :
+        base
+        (
+            ref dber,
+            ref dbbr
+        )
         {
-            HasData = (Data = dt) != null; 
+            HasDataTable = (DataTable = dt) != null; 
         }
     }
 }

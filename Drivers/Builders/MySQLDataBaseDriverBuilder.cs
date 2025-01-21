@@ -1,41 +1,33 @@
-﻿using System;
-using Kudos.DataBasing.Constants;
-using System.Runtime.InteropServices.JavaScript;
+﻿using Kudos.DataBasing.Constants;
 using Kudos.DataBasing.Drivers.Descriptors;
 using Kudos.DataBasing.Enums;
-using Kudos.DataBasing.Interfaces;
-using Kudos.DataBasing.Interfaces.Drivers.Builders;
 using MySql.Data.MySqlClient;
-using Kudos.DataBasing.Interfaces.Drivers;
-using Microsoft.Data.SqlClient;
-using Kudos.Coring.Utils.Numerics;
 
 namespace Kudos.DataBasing.Drivers.Builders
 {
     public sealed class
-		MySQLDataBaseDriverBuilder
+        MySQLDataBaseDriverBuilder
 	:
 		ADataBaseDriverBuilder
         <
-            MySqlConnection,
-            MySqlCommand,
-            MySqlConnectionStringBuilder,
-            MySQLDataBaseDriverDescriptor,
             MySQLDataBaseDriverBuilder,
-            MySQLDataBaseDriver
-        >,
-        IMySQLDataBaseDriverBuilder
+            MySQLDataBaseDriverDescriptor,
+            MySqlConnectionStringBuilder,
+            MySqlConnection,
+            MySQLDataBaseDriver,
+            MySqlDbType
+        >
     {
-        private readonly MySQLDataBaseDriverDescriptor _dsc;
+        internal MySQLDataBaseDriverBuilder() : base(new MySQLDataBaseDriverDescriptor()) { }
 
-        public IMySQLDataBaseDriverBuilder IsDnsSrvResolverEnabled(bool? b) { _dsc.IsDnsSrvResolverEnabled = b; return this; }
-        public IMySQLDataBaseDriverBuilder IsConnectionResetEnabled(bool? b) { _dsc.IsConnectionResetEnabled = b; return this; }
-        public IMySQLDataBaseDriverBuilder IsSessionPoolInteractive(bool? b) { _dsc.IsSessionPoolInteractive = b; return this; }
-        public IMySQLDataBaseDriverBuilder SetCharacterSet(EDataBaseCharacterSet? e) { _dsc.CharacterSet = e; return this; }
-        public IMySQLDataBaseDriverBuilder SetConnectionProtocol(MySqlConnectionProtocol? e) { _dsc.ConnectionProtocol = e; return this; }
-        public IMySQLDataBaseDriverBuilder SetHost(string? s) { _dsc.Host = s; return this; }
-        public IMySQLDataBaseDriverBuilder SetKeepAlive(uint? i) { _dsc.KeepAlive = i; return this; }
-        public IMySQLDataBaseDriverBuilder SetPort(ushort? i) { _dsc.Port = i; return this; }
+        public MySQLDataBaseDriverBuilder IsDnsSrvResolverEnabled(bool? b) { _dsc.IsDnsSrvResolverEnabled = b; return this; }
+        public MySQLDataBaseDriverBuilder IsConnectionResetEnabled(bool? b) { _dsc.IsConnectionResetEnabled = b; return this; }
+        public MySQLDataBaseDriverBuilder IsSessionPoolInteractive(bool? b) { _dsc.IsSessionPoolInteractive = b; return this; }
+        public MySQLDataBaseDriverBuilder SetCharacterSet(EDataBaseCharacterSet? e) { _dsc.CharacterSet = e; return this; }
+        public MySQLDataBaseDriverBuilder SetConnectionProtocol(MySqlConnectionProtocol? e) { _dsc.ConnectionProtocol = e; return this; }
+        public MySQLDataBaseDriverBuilder SetHost(string? s) { _dsc.Host = s; return this; }
+        public MySQLDataBaseDriverBuilder SetKeepAlive(uint? i) { _dsc.KeepAlive = i; return this; }
+        public MySQLDataBaseDriverBuilder SetPort(ushort? i) { _dsc.Port = i; return this; }
 
         protected override void _OnConnectionStringBuilderCompletize(ref MySQLDataBaseDriverDescriptor dsc, ref MySqlConnectionStringBuilder csb)
         {
@@ -76,12 +68,7 @@ namespace Kudos.DataBasing.Drivers.Builders
             if (dsc.ConnectionProtocol != null) csb.ConnectionProtocol = dsc.ConnectionProtocol.Value;
         }
 
-        protected override void _OnBuild(ref MySqlConnection c, out MySQLDataBaseDriver dbd)
-        {
-            dbd = new MySQLDataBaseDriver(ref c);
-        }
-
-        internal MySQLDataBaseDriverBuilder() : base(new MySQLDataBaseDriverDescriptor()) { }
+        protected override void _OnNewDriver(ref MySqlConnection c, out MySQLDataBaseDriver dbd) { dbd = new MySQLDataBaseDriver(ref c); }
     }
 }
 

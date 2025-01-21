@@ -9,10 +9,9 @@ namespace Kudos.DataBasing.Constants
             ConnectionIsAlreadyClosed = nameof(ConnectionIsAlreadyClosed),
             ParameterIsInvalid = nameof(ParameterIsInvalid),
             AlreadyInTransaction = nameof(AlreadyInTransaction),
-            ImpossibleToBeginTransaction = nameof(ImpossibleToBeginTransaction),
             NotInTransaction = nameof(NotInTransaction),
             InternalFailure = nameof(InternalFailure),
-            CreateCommandFailed = nameof(CreateCommandFailed);
+            CommandNotInitialized = nameof(CommandNotInitialized);
     }
 }
 

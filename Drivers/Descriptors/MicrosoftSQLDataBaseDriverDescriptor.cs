@@ -1,6 +1,4 @@
 ﻿using System;
-using Kudos.DataBasing.Enums;
-using Kudos.DataBasing.Interfaces.Drivers.Builders;
 
 namespace Kudos.DataBasing.Drivers.Descriptors
 {

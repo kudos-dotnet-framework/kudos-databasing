@@ -1,6 +1,4 @@
 ﻿using System;
-using Kudos.Coring.Reflection.Utils;
-using Kudos.Coring.Utils;
 using Kudos.DataBasing.Enums;
 using MySql.Data.MySqlClient;
 

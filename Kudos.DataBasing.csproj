@@ -26,9 +26,18 @@
     <ItemGroup>
       <ProjectReference Include="..\Kudos.Coring\Kudos.Coring.csproj" />
       <ProjectReference Include="..\Kudos.Threading\Kudos.Threading.csproj" />
+      <ProjectReference Include="..\Kudos.Dating\Kudos.Dating.csproj" />
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="MySql.Data" Version="9.1.0" />
       <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="Executors\" />
+      <None Remove="Interfaces\Drivers\" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Executors\" />
+      <Folder Include="Interfaces\Drivers\" />
     </ItemGroup>
 </Project>

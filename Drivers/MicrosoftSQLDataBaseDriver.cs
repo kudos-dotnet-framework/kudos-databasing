@@ -1,16 +1,19 @@
 ﻿using System;
-using Kudos.Coring.Utils.Numerics;
-using Kudos.DataBasing.Drivers.Descriptors;
+using System.Data;
 using Kudos.DataBasing.Enums;
+using Kudos.DataBasing.Interfaces.Executors;
 using Microsoft.Data.SqlClient;
-using MySql.Data.MySqlClient;
 
 namespace Kudos.DataBasing.Drivers
 {
     public sealed class
         MicrosoftSQLDataBaseDriver
     :
-        ADataBaseDriver<SqlConnection, SqlCommand>
+        ADataBaseDriver
+        <
+            SqlConnection,
+            SqlDbType
+        >
     {
         #region ... static ...
 
@@ -26,9 +29,9 @@ namespace Kudos.DataBasing.Drivers
 
         internal MicrosoftSQLDataBaseDriver(ref SqlConnection dbc) : base(ref dbc, ref __eType) { }
 
-        protected override void _OnGetLastInsertedID(ref SqlCommand dbcmm, out UInt64? l)
+        protected override void _OnGetLastInsertedID(ref CommandType dbc, out ulong? l)
         {
-            l = null;
+            throw new NotImplementedException();
         }
     }
 }

@@ -21,10 +21,9 @@ namespace Kudos.DataBasing.Results
         internal static readonly DataBaseErrorResult
             Empty,
             InternalFailure,
-            ImpossibleToBeginTransaction,
             AlreadyInTransaction,
             NotInTransaction,
-            CreateCommandFailed,
+            CommandNotInitialized,
             ConnectionIsAlreadyOpened,
             ConnectionIsClosed,
             ConnectionIsAlreadyClosed,
@@ -69,13 +68,6 @@ namespace Kudos.DataBasing.Results
                     CDataBaseErrorMessage.InternalFailure
                 );
 
-            ImpossibleToBeginTransaction =
-                new DataBaseErrorResult
-                (
-                    CDataBaseErrorCode.ImpossibleToBeginTransaction,
-                    CDataBaseErrorMessage.ImpossibleToBeginTransaction
-                );
-
             AlreadyInTransaction =
                 new DataBaseErrorResult
                 (
@@ -90,11 +82,11 @@ namespace Kudos.DataBasing.Results
                     CDataBaseErrorMessage.NotInTransaction
                 );
 
-            CreateCommandFailed =
+            CommandNotInitialized =
                 new DataBaseErrorResult
                 (
-                    CDataBaseErrorCode.CreateCommandFailed,
-                    CDataBaseErrorMessage.CreateCommandFailed
+                    CDataBaseErrorCode.CommandNotInitialized,
+                    CDataBaseErrorMessage.CommandNotInitialized
                 );
 
             ParameterIsInvalid =
@@ -116,7 +108,7 @@ namespace Kudos.DataBasing.Results
 
         internal DataBaseErrorResult(ref Exception e)
         {
-            DbException dbe = e as DbException;
+            DbException? dbe = e as DbException;
 
             if (dbe != null)
             {

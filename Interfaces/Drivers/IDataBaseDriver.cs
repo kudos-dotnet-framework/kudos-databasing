@@ -1,15 +1,13 @@
 ﻿using System;
-using Kudos.DataBasing.Results;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Kudos.DataBasing.Enums;
-using System.Data.Common;
 using Kudos.DataBasing.Interfaces.Executors;
+using Kudos.DataBasing.Results;
+using System.Threading.Tasks;
 
 namespace Kudos.DataBasing.Interfaces.Drivers
 {
-    public interface IDataBaseDriver : IDisposable
-    {
+	public interface IDataBaseDriver
+	{
         EDataBaseType Type { get; }
 
         DataBaseResult OpenConnection();
@@ -33,23 +31,7 @@ namespace Kudos.DataBasing.Interfaces.Drivers
         Task<DataBaseResult> RollbackTransactionAsync();
         DataBaseResult RollbackTransaction();
 
-        IDataBaseExecutor RequestQueryExecutor();
-        IDataBaseExecutor RequestNonQueryExecutor();
-
-        //DataBaseQueryResult ExecuteQuery(String? s, params KeyValuePair<String, Object?>[]? a);
-        //Task<DataBaseQueryResult> ExecuteQueryAsync(String? s, params KeyValuePair<String, Object?>[]? a);
-        //DataBaseQueryResult ExecuteQuery(String? s, Int32? iExpectedRowsNumber, params KeyValuePair<String, Object?>[]? a);
-        //Task<DataBaseQueryResult> ExecuteQueryAsync(String? s, Int32? iExpectedRowsNumber, params KeyValuePair<String, Object?>[]? a);
-
-        //DataBaseNonQueryResult ExecuteNonQuery(String? s, params KeyValuePair<String, Object?>[]? a);
-        //Task<DataBaseNonQueryResult> ExecuteNonQueryAsync(String? s, params KeyValuePair<String, Object?>[]? a);
-
-        //DataBaseTableDescriptor? GetTableDescriptor(String? sTableName);
-        //DataBaseTableDescriptor? GetTableDescriptor(String? sSchemaName, String? sTableName);
-        //Task<DataBaseTableDescriptor?> GetTableDescriptorAsync(String? sTableName);
-        //Task<DataBaseTableDescriptor?> GetTableDescriptorAsync(String? sSchemaName, String? sTableName);
-
-        Task DisposeAsync();
+        IDataBaseExecutor RequestExecutor();
     }
 }
 

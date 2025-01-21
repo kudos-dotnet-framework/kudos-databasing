@@ -2,70 +2,54 @@
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using Kudos.DataBasing.Constants;
-using System.Windows.Input;
-using Kudos.DataBasing.Drivers.Descriptors;
 using Kudos.DataBasing.Enums;
-using Kudos.DataBasing.Interfaces.Drivers;
 using Kudos.DataBasing.Results;
 using Kudos.Threading.Types;
 using System.Collections.Generic;
 using Kudos.Coring.Constants;
-using Kudos.Coring.Utils.Numerics;
 using Kudos.DataBasing.Interfaces.Executors;
-using Kudos.DataBasing.Interfaces.Executors.Actions;
+using Kudos.DataBasing.Interfaces.Drivers;
+using Kudos.DataBasing.Utils;
+using Kudos.Coring.Types;
+using Kudos.DataBasing.Executors;
 
 namespace Kudos.DataBasing.Drivers
 {
     public abstract class
-        ADataBaseDriver<ConnectionType, CommandType>
+        ADataBaseDriver
+        <
+            ConnectionType,
+            DbType
+        >
     :
         SemaphorizedObject,
-        IDataBaseDriver,
-        IDataBaseExecutor,
-        IDataBaseSetSQLActionExecutor,
-        IDataBaseSetSQLExecutor,
-        IDataBaseSetParameterActionExecutor,
-        IDataBaseExecuteActionExecutor
+        IDataBaseDriver
     where
         ConnectionType
     :
         DbConnection
     where
-        CommandType
+        DbType
     :
-        DbCommand
+        Enum
     {
-        #region ... static ...
-
-        private static Boolean
-            __bTrue,
-            __bFalse;
-
-        static ADataBaseDriver()
-        {
-            __bFalse = false;
-            __bTrue = true;
-        }
-
-        #endregion
-
-        private readonly ConnectionType _cnn;
-        private CommandType _cmm;
+        private /*readonly*/ ConnectionType _cnn;
+        private /*readonly*/ DbCommand? _cmm;
+        private readonly Boolean _bHasDbCommand;
 
         public EDataBaseType Type { get; private set; }
 
         internal ADataBaseDriver
         (
-            ref ConnectionType dbc,
+            ref ConnectionType cnn,
             ref EDataBaseType et
         )
         {
             Type = et;
-            _cnn = dbc;
+            _cnn = cnn;
+            try { _cmm = _cnn.CreateCommand(); } catch { }
+            _bHasDbCommand = _cmm != null;
         }
-
-        #region IDataBaseDriver
 
         #region Connection
 
@@ -94,39 +78,15 @@ namespace Kudos.DataBasing.Drivers
             DataBaseErrorResult?
                 dber;
 
-            if (!IsConnectionOpened())
-            {
-                try
-                {
-                    await _cnn.OpenAsync();
-                    dber = null;
-                }
-                catch (Exception e)
-                {
-                    dber = new DataBaseErrorResult(ref e);
-                }
-
-                if (dber == null)
-                {
-                    try
-                    {
-                        _cmm = _cnn.CreateCommand() as CommandType;
-                    }
-                    catch (Exception e)
-                    {
-                        dber = new DataBaseErrorResult(ref e);
-                    }
-
-                    if
-                    (
-                        dber == null
-                        && _cmm == null
-                    )
-                        dber = DataBaseErrorResult.CreateCommandFailed;
-                }
-            }
-            else
+            if (!_bHasDbCommand)
+                dber = DataBaseErrorResult.CommandNotInitialized;
+            else if (IsConnectionOpened())
                 dber = DataBaseErrorResult.ConnectionIsAlreadyOpened;
+            else
+            {
+                Exception? exc = await DbConnectionUtils.OpenAsync(_cnn);
+                _OnNewDataBaseErrorResult(ref exc, out dber);
+            }
 
             dbbr
                 .StopOnConnecting();
@@ -163,22 +123,13 @@ namespace Kudos.DataBasing.Drivers
             DataBaseErrorResult?
                 dber;
 
-            if (!IsConnectionClosed())
-            {
-                try
-                {
-                    await _cnn.CloseAsync();
-                    dber = null;
-                }
-                catch (Exception e)
-                {
-                    dber = new DataBaseErrorResult(ref e);
-                }
-
-                try { await _cmm.DisposeAsync(); } catch { }
-            }
-            else
+            if (IsConnectionClosed())
                 dber = DataBaseErrorResult.ConnectionIsAlreadyClosed;
+            else
+            {
+                Exception? exc = await DbConnectionUtils.CloseAsync(_cnn);
+                _OnNewDataBaseErrorResult(ref exc, out dber);
+            }
 
             dbbr
                 .StopOnConnecting();
@@ -194,29 +145,20 @@ namespace Kudos.DataBasing.Drivers
 
         public Boolean IsConnectionOpening()
         {
-            return
-                _cnn.State == ConnectionState.Connecting
-                && _cmm != null;
+            return _cnn.State == ConnectionState.Connecting;
         }
-
         public Boolean IsConnectionOpened()
         {
             return
-                (
-                    _cnn.State == ConnectionState.Open
-                    || _cnn.State == ConnectionState.Fetching
-                    || _cnn.State == ConnectionState.Executing
-                )
-                && _cmm != null;
+                _cnn.State == ConnectionState.Open
+                || _cnn.State == ConnectionState.Fetching
+                || _cnn.State == ConnectionState.Executing;
         }
-
         public Boolean IsConnectionBroken()
         {
             return
-                _cnn.State == ConnectionState.Broken
-                || _cmm == null;
+                _cnn.State == ConnectionState.Broken;
         }
-
         public Boolean IsConnectionClosed()
         {
             return
@@ -257,15 +199,10 @@ namespace Kudos.DataBasing.Drivers
             else if (String.IsNullOrWhiteSpace(s))
                 dber = DataBaseErrorResult.ParameterIsInvalid;
             else
-                try
-                {
-                    await _cnn.ChangeDatabaseAsync(s);
-                    dber = null;
-                }
-                catch (Exception e)
-                {
-                    dber = new DataBaseErrorResult(ref e);
-                }
+            {
+                Exception? exc = await DbConnectionUtils.ChangeDatabaseAsync(_cnn, s);
+                _OnNewDataBaseErrorResult(ref exc, out dber);
+            }
 
             dbbr
                 .StopOnExecuting();
@@ -283,9 +220,11 @@ namespace Kudos.DataBasing.Drivers
 
         public Boolean IsIntoTransaction()
         {
-            return
-                _cmm != null
-                && _cmm.Transaction != null;
+            Boolean b;
+            _WaitSemaphore();
+            b = _bHasDbCommand && _cmm.Transaction != null;
+            _ReleaseSemaphore();
+            return b;
         }
 
         public DataBaseResult BeginTransaction()
@@ -309,21 +248,18 @@ namespace Kudos.DataBasing.Drivers
                 .StopOnWaiting()
                 .StartOnExecuting();
 
-            if (!IsConnectionOpened())
+            if (!_bHasDbCommand)
+                dber = DataBaseErrorResult.CommandNotInitialized;
+            else if (!IsConnectionOpened())
                 dber = DataBaseErrorResult.ConnectionIsClosed;
-            else if (_cmm.Transaction != null)
+            else if (IsIntoTransaction())
                 dber = DataBaseErrorResult.AlreadyInTransaction;
             else
-                try
-                {
-                    dber = (_cmm.Transaction = await _cnn.BeginTransactionAsync()) != null
-                        ? null
-                        : DataBaseErrorResult.ImpossibleToBeginTransaction;
-                }
-                catch (Exception e)
-                {
-                    dber = new DataBaseErrorResult(ref e);
-                }
+            {
+                SmartResult<DbTransaction?> sr = await DbConnectionUtils.BeginTransactionAsync(_cnn);
+                _OnNewDataBaseErrorResult(ref sr, out dber);
+                if (dber == null) _cmm.Transaction = sr.Value;
+            }
 
             dbbr
                 .StopOnExecuting();
@@ -354,8 +290,7 @@ namespace Kudos.DataBasing.Drivers
         {
             return await _CommitRollbackTransactionAsync(false);
         }
-
-        private async Task<DataBaseResult> _CommitRollbackTransactionAsync(Boolean bCommit)
+        private async Task<DataBaseResult> _CommitRollbackTransactionAsync(Boolean bIsCommit)
         {
             DataBaseBenchmarkResult
                 dbbr =
@@ -372,24 +307,23 @@ namespace Kudos.DataBasing.Drivers
 
             if (!IsConnectionOpened())
                 dber = DataBaseErrorResult.ConnectionIsClosed;
-            else if (_cmm.Transaction == null)
+            else if (!IsIntoTransaction())
                 dber = DataBaseErrorResult.NotInTransaction;
             else
             {
-                try
-                {
-                    if (bCommit) await _cmm.Transaction.CommitAsync();
-                    else await _cmm.Transaction.RollbackAsync();
-                    dber = null;
-                }
-                catch (Exception e)
-                {
-                    dber = new DataBaseErrorResult(ref e);
-                }
+                Exception? exc =
+                    await
+                    (
+                        bIsCommit
+                            ? DbTransactionUtils.CommitAsync(_cmm.Transaction)
+                            : DbTransactionUtils.RollbackAsync(_cmm.Transaction)
+                    );
 
-                if (dber == null)
+                _OnNewDataBaseErrorResult(ref exc, out dber);
+
+                if(dber == null)
                 {
-                    try { await _cmm.Transaction.DisposeAsync(); } catch { }
+                    await DbTransactionUtils.DisposeAsync(_cmm.Transaction);
                     _cmm.Transaction = null;
                 }
             }
@@ -406,300 +340,11 @@ namespace Kudos.DataBasing.Drivers
 
         #region Executor
 
-        public IDataBaseExecutor RequestQueryExecutor()
-        {
-            return this;
-        }
-
-        public IDataBaseExecutor RequestNonQueryExecutor()
-        {
-            return this;
-        }
-
-        #endregion
-
-        #endregion
-
-        #region IDataBaseExecutor
-
-        public IDataBaseSetSQLExecutor SetSQL(String? s)
-        {
-            return this;
-        }
-
-        #endregion
-
-        #region IDataBaseSetParameterActionExecutor
-
-        public void SetParameter(String? s, Object? o)
-        {
-
-        }
-
-        #endregion
-
-        #region IDataBaseExecuteActionExecutor
-
-        public void Execute()
-        {
-
-        }
-
-        #endregion
-
-        #region Execute
-
-        #region public ... ExecuteQuery...(...)
-
-        public DataBaseQueryResult ExecuteQuery
-        (
-            String? s,
-            params KeyValuePair<String?, Object?>[]? kvpa
-        )
-        {
-            return ExecuteQuery(s, null, kvpa);
-        }
-        public async Task<DataBaseQueryResult> ExecuteQueryAsync
-        (
-            String? s,
-            params KeyValuePair<String?, Object?>[]? kvpa
-        )
-        {
-            return await ExecuteQueryAsync(s, null, kvpa);
-        }
-        public DataBaseQueryResult ExecuteQuery
-        (
-            String? s,
-            Int32? iExpectedRowsNumber,
-            params KeyValuePair<String?, Object?>[]? kvpa
-        )
-        {
-            Task<DataBaseQueryResult> t = ExecuteQueryAsync(s, iExpectedRowsNumber, kvpa);
-            t.Wait();
-            return t.Result;
-        }
-        public async Task<DataBaseQueryResult> ExecuteQueryAsync
-        (
-            String? s,
-            Int32? iExpectedRowsNumber,
-            params KeyValuePair<String?, Object?>[]? kvpa
-        )
-        {
-            DataBaseBenchmarkResult
-                dbbr =
-                    new DataBaseBenchmarkResult()
-                        .StartOnWaiting();
-
-            await _WaitSemaphoreAsync();
-
-            dbbr
-                .StopOnWaiting()
-                .StartOnPreparing();
-
-            DataBaseErrorResult? dber;
-            _PrepareCommand
-            (
-                ref s,
-                ref kvpa,
-                out dber
-            );
-
-            dbbr
-                .StopOnPreparing();
-
-            DataTable? dt;
-
-            if (dber != null)
-                dt = null;
-            else
-            {
-                dbbr.StartOnExecuting();
-
-                try
-                {
-                    DbDataReader dbdr = await _cmm.ExecuteReaderAsync();
-
-                    if (dbdr.HasRows)
-                    {
-                        dt = new DataTable();
-
-                        if (iExpectedRowsNumber != null && iExpectedRowsNumber > 0)
-                            dt.MinimumCapacity = iExpectedRowsNumber.Value;
-
-                        dt.Load(dbdr);
-                    }
-                    else
-                        dt = null;
-
-                    await dbdr.DisposeAsync();
-                }
-                catch (Exception e)
-                {
-                    dt = null;
-                    dber = new DataBaseErrorResult(ref e);
-                }
-
-                dbbr.StopOnExecuting();
-            }
-
-            _ReleaseSemaphore();
-
-            return new DataBaseQueryResult(ref dt, ref dber, ref dbbr);
-        }
-
-        #endregion
-
-        #region public ... ExecuteNonQuery...(...)
-
-        public DataBaseNonQueryResult ExecuteNonQuery
-        (
-            String? s,
-            params KeyValuePair<String?, Object?>[]? kvpa
-        )
-        {
-            Task<DataBaseNonQueryResult> t = ExecuteNonQueryAsync(s, kvpa);
-            t.Wait();
-            return t.Result;
-        }
-        public async Task<DataBaseNonQueryResult> ExecuteNonQueryAsync
-        (
-            String? s,
-            params KeyValuePair<String?, Object?>[]? kvpa
-        )
-        {
-            DataBaseBenchmarkResult
-                dbbr =
-                    new DataBaseBenchmarkResult()
-                        .StartOnWaiting();
-
-            await _WaitSemaphoreAsync();
-
-            dbbr
-                .StopOnWaiting()
-                .StartOnPreparing();
-
-            DataBaseErrorResult? dber;
-            _PrepareCommand
-            (
-                ref s,
-                ref kvpa,
-                out dber
-            );
-
-            dbbr
-                .StopOnPreparing();
-
-            UInt64? lLastInsertedID;
-            UInt32? iUpdatedRows;
-
-            if (dber != null)
-            {
-                lLastInsertedID = null;
-                iUpdatedRows = null;
-            }
-            else
-            {
-                dbbr.StartOnExecuting();
-
-                try
-                {
-                    Int32 i = await _cmm.ExecuteNonQueryAsync();
-                    iUpdatedRows = i > -1 ? UInt32Utils.NNParse(i) : null;
-                    _OnGetLastInsertedID(ref _cmm, out lLastInsertedID);
-                }
-                catch (Exception e)
-                {
-                    lLastInsertedID = null;
-                    iUpdatedRows = null;
-                    dber = new DataBaseErrorResult(ref e);
-                }
-
-                dbbr.StopOnExecuting();
-            }
-
-            _ReleaseSemaphore();
-
-            return
-                new DataBaseNonQueryResult
-                (
-                    ref lLastInsertedID,
-                    ref iUpdatedRows,
-                    ref dber,
-                    ref dbbr
-                );
-        }
-
-        #endregion
+        public IDataBaseExecutor RequestExecutor() { return new DataBaseExecutor(ref _cmm); }
 
         #endregion
 
         protected abstract void _OnGetLastInsertedID(ref CommandType dbc, out UInt64? l);
-
-        #region Command
-
-        private void _PrepareCommand
-        (
-            ref String? s,
-            ref KeyValuePair<String?, Object?>[]? kvpa,
-            out DataBaseErrorResult? dber
-        )
-        {
-            if (!IsConnectionOpened())
-            {
-                dber = DataBaseErrorResult.ConnectionIsClosed;
-                return;
-            }
-            else if (String.IsNullOrWhiteSpace(s))
-            {
-                dber = DataBaseErrorResult.ParameterIsInvalid;
-                return;
-            }
-
-            try
-            {
-                _cmm.CommandType = System.Data.CommandType.Text;
-                _cmm.CommandText = s;
-                _cmm.Parameters.Clear();
-                dber = null;
-            }
-            catch (Exception e)
-            {
-                dber = new DataBaseErrorResult(ref e);
-            }
-
-            if
-            (
-                dber != null
-                || kvpa == null
-            )
-                return;
-
-            DbParameter dbpi;
-            String si;
-            for (int i = 0; i < kvpa.Length; i++)
-            {
-                if (kvpa[i].Key == null) continue;
-                si = kvpa[i].Key.Trim();
-
-                while (si.StartsWith(CCharacter.At))
-                    si = si.Substring(1);
-
-                try
-                {
-                    dbpi = _cmm.CreateParameter();
-                    dbpi.ParameterName = si;
-                    dbpi.Value = kvpa[i].Value;
-                    _cmm.Parameters.Add(dbpi);
-                }
-                catch (Exception e)
-                {
-                    dber = new DataBaseErrorResult(ref e);
-                    return;
-                }
-            }
-        }
-
-        #endregion
 
         #region Dispose()
 
@@ -712,12 +357,26 @@ namespace Kudos.DataBasing.Drivers
         {
             if (_cmm != null)
             {
-                if (_cmm.Transaction != null) try { await _cmm.Transaction.RollbackAsync(); } catch { }
-                try { await _cmm.DisposeAsync(); } catch { }
+                await DbTransactionUtils.RollbackAsync(_cmm.Transaction);
+                await DbTransactionUtils.DisposeAsync(_cmm.Transaction);
             }
-            if (_cnn != null) try { await _cnn.DisposeAsync(); } catch { }
+            await DbCommandUtils.DisposeAsync(_cmm);
+            await DbConnectionUtils.DisposeAsync(_cnn);
         }
 
         #endregion
+
+        private void _OnNewDataBaseErrorResult(ref Exception? exc, out DataBaseErrorResult? dber)
+        {
+            dber = exc != null
+                ? new DataBaseErrorResult(ref exc)
+                : null;
+        }
+
+        private void _OnNewDataBaseErrorResult<T>(ref SmartResult<T> sr, out DataBaseErrorResult? dber)
+        {
+            Exception? exc = sr.Exception;
+            _OnNewDataBaseErrorResult(ref exc, out dber);
+        }
     }
 }

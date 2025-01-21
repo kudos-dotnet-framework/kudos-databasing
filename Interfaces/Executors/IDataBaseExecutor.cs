@@ -7,7 +7,7 @@ namespace Kudos.DataBasing.Interfaces.Executors
 	public interface
 		IDataBaseExecutor
 	:
-		IDataBaseSetSQLActionExecutor
+		IDataBaseSetCommandTypeActionExecutor
     {
 	}
 }

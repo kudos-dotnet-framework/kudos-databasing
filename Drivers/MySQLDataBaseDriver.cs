@@ -1,9 +1,8 @@
 ﻿using System;
-using Kudos.Coring.Utils.Numerics;
-using Kudos.DataBasing.Drivers.Descriptors;
+using System.Data;
 using Kudos.DataBasing.Enums;
-using Kudos.DataBasing.Results;
-using Microsoft.Data.SqlClient;
+using Kudos.DataBasing.Executors;
+using Kudos.DataBasing.Interfaces.Executors;
 using MySql.Data.MySqlClient;
 
 namespace Kudos.DataBasing.Drivers
@@ -11,7 +10,11 @@ namespace Kudos.DataBasing.Drivers
     public sealed class
         MySQLDataBaseDriver
     :
-        ADataBaseDriver<MySqlConnection, MySqlCommand>
+        ADataBaseDriver
+        <
+            MySqlConnection,
+            MySqlDbType
+        >
     {
         #region ... static ...
 
@@ -27,11 +30,9 @@ namespace Kudos.DataBasing.Drivers
 
         internal MySQLDataBaseDriver(ref MySqlConnection dbc) : base(ref dbc, ref __eType) { }
 
-        protected override void _OnGetLastInsertedID(ref MySqlCommand dbcmm, out UInt64? l)
+        protected override void _OnGetLastInsertedID(ref CommandType dbc, out ulong? l)
         {
-            l = dbcmm.LastInsertedId > -1
-                ? UInt64Utils.NNParse(dbcmm.LastInsertedId)
-                : null;
+            throw new NotImplementedException();
         }
     }
 }

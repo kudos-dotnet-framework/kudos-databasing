@@ -9,33 +9,113 @@ namespace Kudos.DataBasing.Enums
 {
     public enum EDataBaseDataType
     {
-        TinyInteger,
-        UnsignedTinyInteger,
+        #region Numerical
 
-        SmallInteger,
-        UnsignedSmallInteger,
+        TinyInteger,            // 1 byte               MySqlDbType
+        UnsignedTinyInteger,    // 1 byte   SqlDbType   MySqlDbType
 
-        MediumInteger,
-        UnsignedMediumInteger,
+        SmallInteger,           // 2 byte   SqlDbType   MySqlDbType
+        UnsignedSmallInteger,   // 2 byte               MySqlDbType
 
-        Integer,
-        UnsignedInteger,
+        MediumInteger,          // 3 byte               MySqlDbType
+        UnsignedMediumInteger,  // 3 byte               MySqlDbType
 
-        BigInteger,
-        UnsignedBigInteger,
+        Integer,                // 4 byte   SqlDbType   MySqlDbType
+        UnsignedInteger,        // 4 byte               MySqlDbType
 
-        Double,
-        UnsignedDouble,
+        BigInteger,             // 8 byte   SqlDbType   MySqlDbType
+        UnsignedBigInteger,     // 8 byte               MySqlDbType
 
-        Boolean,
+        Single,                 //          SqlDbType   MySqlDbType
+        Double,                 //          SqlDbType   MySqlDbType
+        Decimal,                //          SqlDbType   MySqlDbType
 
-        VariableChar,
-        Text,
-        MediumText,
-        LongText,
+        #endregion
 
-        Json,
+        #region Textual
 
-        Byte
+        NChar,                  //          SqlDbType  
+        NVarChar,               //          SqlDbType  
+        Char,                   //          SqlDbType  
+        VarChar,                //          SqlDbType   MySqlDbType
+
+        String,                 //          SqlDbType   MySqlDbType
+
+        TinyText,               // 2^8                  MySqlDbType
+        Text,                   // 2^16                 MySqlDbType
+        MediumText,             // 2^24                 MySqlDbType
+        LongText,               // 2^32                 MySqlDbType
+
+        #endregion
+
+        #region Bit
+
+        Bit
+
+        #endregion
+
+        //Byte,
+        //Timestamp,
+        //Date,
+        //Time,
+        //DateTime,
+        //Year,
+        //Newdate,
+        //VarString,
+        //Bit,
+        //Vector,
+        //JSON,
+        //NewDecimal,
+        //Enum,
+        //Set,
+        //TinyBlob,
+        //MediumBlob,
+        //LongBlob,
+        //Blob,
+        //VarChar,
+        //String,
+        //Geometry,
+        //UByte,
+        //Binary,
+        //VarBinary,
+        //TinyText,
+        //MediumText,
+        //LongText,
+        //Text,
+        //Guid
     }
+
+
+
+    //public enum EDataBaseDataType
+    //{
+    //    TinyInteger,
+    //    UnsignedTinyInteger,
+
+    //    SmallInteger,
+    //    UnsignedSmallInteger,
+
+    //    MediumInteger,
+    //    UnsignedMediumInteger,
+
+    //    Integer,
+    //    UnsignedInteger,
+
+    //    BigInteger,
+    //    UnsignedBigInteger,
+
+    //    Double,
+    //    UnsignedDouble,
+
+    //    Boolean,
+
+    //    VariableChar,
+    //    Text,
+    //    MediumText,
+    //    LongText,
+
+    //    Json,
+
+    //    Byte
+    //}
 }
