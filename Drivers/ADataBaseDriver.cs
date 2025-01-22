@@ -322,6 +322,20 @@ namespace Kudos.DataBasing.Drivers
             return dbe;
         }
 
+        //public IDataBaseSetCommandTypeExecutor RequestTextExecutor()
+        //{
+        //    return
+        //        RequestExecutor()
+        //            .SetCommandType(CommandType.Text);
+        //}
+
+        //public IDataBaseSetCommandTypeExecutor RequestStoredProcedureExecutor()
+        //{
+        //    return
+        //        RequestExecutor()
+        //            .SetCommandType(CommandType.StoredProcedure);
+        //}
+
         protected abstract void _OnNewRequestExecutor(ref IDataBaseDriver dbd, ref DbCommandType? dbc, ref SmartSemaphoreSlim sss, out IDataBaseExecutor dbe);
 
         #endregion

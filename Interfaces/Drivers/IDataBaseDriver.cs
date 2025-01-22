@@ -32,6 +32,8 @@ namespace Kudos.DataBasing.Interfaces.Drivers
         DataBaseResult RollbackTransaction();
 
         IDataBaseExecutor RequestExecutor();
+        //IDataBaseSetCommandTypeExecutor RequestTextExecutor();
+        //IDataBaseSetCommandTypeExecutor RequestStoredProcedureExecutor();
     }
 }
 

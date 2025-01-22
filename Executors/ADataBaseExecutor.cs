@@ -132,7 +132,7 @@ namespace Kudos.DataBasing.Executors
             String?
                 sCommandText;
 
-            if(_dbc != null)
+            if(!dbnqr.HasError)
             {
                 eCommandType = _dbc.CommandType;
                 sCommandText = _dbc.CommandText;
