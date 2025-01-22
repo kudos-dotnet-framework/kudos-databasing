@@ -1,7 +1,8 @@
-﻿using System;
-using System.Data;
-using Kudos.DataBasing.Enums;
+﻿using Kudos.DataBasing.Enums;
+using Kudos.DataBasing.Executors;
+using Kudos.DataBasing.Interfaces.Drivers;
 using Kudos.DataBasing.Interfaces.Executors;
+using Kudos.Threading.Types;
 using Microsoft.Data.SqlClient;
 
 namespace Kudos.DataBasing.Drivers
@@ -12,7 +13,7 @@ namespace Kudos.DataBasing.Drivers
         ADataBaseDriver
         <
             SqlConnection,
-            SqlDbType
+            SqlCommand
         >
     {
         #region ... static ...
@@ -29,9 +30,9 @@ namespace Kudos.DataBasing.Drivers
 
         internal MicrosoftSQLDataBaseDriver(ref SqlConnection dbc) : base(ref dbc, ref __eType) { }
 
-        protected override void _OnGetLastInsertedID(ref CommandType dbc, out ulong? l)
+        protected override void _OnNewRequestExecutor(ref IDataBaseDriver dbd, ref SqlCommand? dbc, ref SmartSemaphoreSlim sss, out IDataBaseExecutor dbe)
         {
-            throw new NotImplementedException();
+            dbe = new MicrosoftSQLDataBaseExecutor(ref dbd, ref dbc, ref sss);
         }
     }
 }

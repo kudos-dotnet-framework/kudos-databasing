@@ -7,8 +7,9 @@ namespace Kudos.DataBasing.Interfaces.Executors
         IDataBaseSetCommandTextExecutor
     :
 		IDataBaseAddParameterActionExecutor,
-		IDataBaseExecuteAsQueryActionExecutor,
-        IDataBaseExecuteAsNonQueryActionExecutor
+		IDataBaseExecuteQueryActionExecutor,
+        IDataBaseExecuteNonQueryActionExecutor,
+        IDataBaseExecuteScalarActionExecutor
     {
 	}
 }

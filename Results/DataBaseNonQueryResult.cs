@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -9,25 +10,21 @@ namespace Kudos.DataBasing.Results
     public sealed class
         DataBaseNonQueryResult
     :
-        DataBaseResult
+        DataBaseResult<Object, DataBaseNonQueryResult>
     {
-        public readonly UInt32? UpdatedRows;
-        public readonly Boolean HasUpdatedRows;
-        public readonly UInt64? LastInsertedID;
-        public readonly Boolean HasLastInsertedID;
+        public UInt32? UpdatedRows { get; private set; }
+        public Boolean HasUpdatedRows { get; private set; }
 
-        internal DataBaseNonQueryResult
-        (
-            ref UInt64? lLastInsertedID,
-            ref UInt32? iUpdateRows,
-            ref DataBaseErrorResult? dber,
-            ref DataBaseBenchmarkResult dbbr
-        )
-        :
-            base(ref dber, ref dbbr)
+        internal DataBaseNonQueryResult Eject(ref UInt32? ui32)
         {
-            HasLastInsertedID = (LastInsertedID = lLastInsertedID) != null;
-            HasUpdatedRows = (UpdatedRows = iUpdateRows) != null;
+            HasUpdatedRows = (UpdatedRows = ui32) != null;
+            return this;
         }
+
+        internal DataBaseNonQueryResult()
+            : base() { }
+
+        internal DataBaseNonQueryResult(ref DataBaseBenchmarkResult dbbr)
+            : base(ref dbbr) { }
     }
 }

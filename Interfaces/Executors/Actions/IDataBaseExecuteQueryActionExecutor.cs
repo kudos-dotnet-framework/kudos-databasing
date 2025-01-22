@@ -5,10 +5,10 @@ using Kudos.DataBasing.Results;
 namespace Kudos.DataBasing.Interfaces.Executors.Actions
 {
 	public interface
-		IDataBaseExecuteAsQueryActionExecutor
+		IDataBaseExecuteQueryActionExecutor
 	{
-		DataBaseQueryResult ExecuteAsQuery();
-		Task<DataBaseQueryResult> ExecuteAsQueryAsync();
+		DataBaseQueryResult ExecuteQuery();
+		Task<DataBaseQueryResult> ExecuteQueryAsync();
     }
 }
 

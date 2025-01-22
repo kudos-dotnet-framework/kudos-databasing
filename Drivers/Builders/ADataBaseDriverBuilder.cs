@@ -2,6 +2,7 @@
 using System;
 using Kudos.DataBasing.Drivers.Descriptors;
 using System.Data.Common;
+using System.Data;
 
 namespace Kudos.DataBasing.Drivers.Builders
 {
@@ -11,9 +12,9 @@ namespace Kudos.DataBasing.Drivers.Builders
             ThisType,
             DescriptorType,
             ConnectionStringBuilderType,
-            ConnectionType,
-            DriverType,
-            DbType
+            DbConnectionType,
+            DbCommandType,
+            DriverType
         >
     where
         ThisType
@@ -23,19 +24,23 @@ namespace Kudos.DataBasing.Drivers.Builders
             ThisType,
             DescriptorType,
             ConnectionStringBuilderType,
-            ConnectionType,
-            DriverType,
-            DbType
+            DbConnectionType,
+            DbCommandType,
+            DriverType
         >
     where
         DescriptorType
     :
         ADataBaseDriverDescriptor<DescriptorType>
     where
-        ConnectionType
+        DbConnectionType
     :
         DbConnection,
         new()
+    where
+        DbCommandType
+    :
+        DbCommand
     where
         ConnectionStringBuilderType
     :
@@ -46,13 +51,9 @@ namespace Kudos.DataBasing.Drivers.Builders
     :
         ADataBaseDriver
         <
-            ConnectionType,
-            DbType
+            DbConnectionType,
+            DbCommandType
         >
-    where
-        DbType
-    :
-        Enum
     {
         protected /*readonly*/ DescriptorType _dsc;
 
@@ -73,13 +74,13 @@ namespace Kudos.DataBasing.Drivers.Builders
         public DriverType Build()
         {
             ConnectionStringBuilderType csb = new ConnectionStringBuilderType(); _OnConnectionStringBuilderCompletize(ref _dsc, ref csb);
-            ConnectionType c = new ConnectionType() { ConnectionString = csb.ToString() };
-            DriverType dbd; _OnNewDriver(ref c, out dbd);
+            DbConnectionType dbc = new DbConnectionType() { ConnectionString = csb.ToString() };
+            DriverType dbd; _OnNewDriver(ref dbc, out dbd);
             return dbd;
         }
 
         protected abstract void _OnConnectionStringBuilderCompletize(ref DescriptorType dsc, ref ConnectionStringBuilderType csb);
-        protected abstract void _OnNewDriver(ref ConnectionType c, out DriverType dbd);
+        protected abstract void _OnNewDriver(ref DbConnectionType c, out DriverType dbd);
 
         internal ADataBaseDriverBuilder(DescriptorType dsc) { _dsc = dsc; }
     }

@@ -14,8 +14,8 @@ namespace Kudos.DataBasing.Drivers.Builders
             MySQLDataBaseDriverDescriptor,
             MySqlConnectionStringBuilder,
             MySqlConnection,
-            MySQLDataBaseDriver,
-            MySqlDbType
+            MySqlCommand,
+            MySQLDataBaseDriver
         >
     {
         internal MySQLDataBaseDriverBuilder() : base(new MySQLDataBaseDriverDescriptor()) { }

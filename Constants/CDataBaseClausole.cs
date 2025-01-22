@@ -4,9 +4,9 @@ namespace Kudos.DataBasing.Constants
 	internal static class CDataBaseClausole
 	{
         internal static readonly String
-            Limit = "LIMIT",
-
-            // Junction
-            And = "AND";
+            INSERT  = "INSERT",     //C
+            SELECT = "SELECT",      //R
+            UPDATE = "UPDATE",      //U
+            DELETE = "DELETE";      //D
     }
 }

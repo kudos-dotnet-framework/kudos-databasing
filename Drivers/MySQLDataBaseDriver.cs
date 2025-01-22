@@ -2,7 +2,9 @@
 using System.Data;
 using Kudos.DataBasing.Enums;
 using Kudos.DataBasing.Executors;
+using Kudos.DataBasing.Interfaces.Drivers;
 using Kudos.DataBasing.Interfaces.Executors;
+using Kudos.Threading.Types;
 using MySql.Data.MySqlClient;
 
 namespace Kudos.DataBasing.Drivers
@@ -13,7 +15,7 @@ namespace Kudos.DataBasing.Drivers
         ADataBaseDriver
         <
             MySqlConnection,
-            MySqlDbType
+            MySqlCommand
         >
     {
         #region ... static ...
@@ -30,9 +32,9 @@ namespace Kudos.DataBasing.Drivers
 
         internal MySQLDataBaseDriver(ref MySqlConnection dbc) : base(ref dbc, ref __eType) { }
 
-        protected override void _OnGetLastInsertedID(ref CommandType dbc, out ulong? l)
+        protected override void _OnNewRequestExecutor(ref IDataBaseDriver dbd, ref MySqlCommand? dbc, ref SmartSemaphoreSlim sss, out IDataBaseExecutor dbe)
         {
-            throw new NotImplementedException();
+            dbe = new MySQLDataBaseExecutor(ref dbd, ref dbc, ref sss);
         }
     }
 }

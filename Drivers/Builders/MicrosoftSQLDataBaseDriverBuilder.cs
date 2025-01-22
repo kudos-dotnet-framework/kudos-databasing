@@ -15,8 +15,8 @@ namespace Kudos.DataBasing.Drivers.Builders
             MicrosoftSQLDataBaseDriverDescriptor,
             SqlConnectionStringBuilder,
             SqlConnection,
-            MicrosoftSQLDataBaseDriver,
-            SqlDbType
+            SqlCommand,
+            MicrosoftSQLDataBaseDriver
         >
     {
         internal MicrosoftSQLDataBaseDriverBuilder() : base(new MicrosoftSQLDataBaseDriverDescriptor()) { }

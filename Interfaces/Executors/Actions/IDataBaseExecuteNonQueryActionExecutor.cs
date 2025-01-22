@@ -5,9 +5,9 @@ using Kudos.DataBasing.Results;
 namespace Kudos.DataBasing.Interfaces.Executors.Actions
 {
     public interface
-        IDataBaseExecuteAsNonQueryActionExecutor
+        IDataBaseExecuteNonQueryActionExecutor
     {
-        DataBaseNonQueryResult ExecuteAsNonQuery();
-        Task<DataBaseNonQueryResult> ExecuteAsNonQueryAsync();
+        DataBaseNonQueryResult ExecuteNonQuery();
+        Task<DataBaseNonQueryResult> ExecuteNonQueryAsync();
     }
 }

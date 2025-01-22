@@ -35,6 +35,20 @@ namespace Kudos.DataBasing.Utils
             try { dbc.CommandText = s; return null; } catch (Exception exc) { return exc; }
         }
 
+        public static SmartResult<String?> GetCommandText(DbCommand? dbc)
+        {
+            if (dbc == null) return SmartResult<string?>.ArgumentNullException;
+            try { return new SmartResult<String?>(dbc.CommandText); }
+            catch (Exception exc) { return new SmartResult<string?>(exc); }
+        }
+
+        public static SmartResult<CommandType?> GetCommandType(DbCommand? dbc)
+        {
+            if (dbc == null) return SmartResult<CommandType?>.ArgumentNullException;
+            try { return new SmartResult<CommandType?>(dbc.CommandType); }
+            catch (Exception exc) { return new SmartResult<CommandType?>(exc); }
+        }
+
         public static SmartResult<DbParameter?> CreateParameter(DbCommand? dbc)
         {
             if (dbc == null) return SmartResult<DbParameter?>.ArgumentNullException;
@@ -61,6 +75,20 @@ namespace Kudos.DataBasing.Utils
             if (dbc == null) return SmartResult<DbDataReader?>.ArgumentNullException;
             try { return new SmartResult<DbDataReader?>(await dbc.ExecuteReaderAsync()); }
             catch (Exception exc) { return new SmartResult<DbDataReader?>(exc); }
+        }
+
+        public static async Task<SmartResult<Int32?>> ExecuteNonQueryAsync(DbCommand? dbc)
+        {
+            if (dbc == null) return SmartResult<Int32?>.ArgumentNullException;
+            try { return new SmartResult<Int32?>(await dbc.ExecuteNonQueryAsync()); }
+            catch (Exception exc) { return new SmartResult<Int32?>(exc); }
+        }
+
+        public static async Task<SmartResult<Object?>> ExecuteScalarAsync(DbCommand? dbc)
+        {
+            if (dbc == null) return SmartResult<Object?>.ArgumentNullException;
+            try { return new SmartResult<Object?>(await dbc.ExecuteScalarAsync()); }
+            catch (Exception exc) { return new SmartResult<Object?>(exc); }
         }
     }
 }
